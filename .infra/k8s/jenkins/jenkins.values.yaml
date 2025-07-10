@@ -1,0 +1,48 @@
+controller:
+  jenkinsUrl: http://localhost:9001
+  serviceType: NodePort
+  resources:
+    requests:
+      cpu: "400m"
+      memory: "512Mi"
+    limits:
+      cpu: "2000m"
+      memory: "4096Mi"
+  admin:
+    password: "admin123"
+  installPlugins:
+    - kubernetes:4358.vcfd9c5a_0a_f51
+    - workflow-aggregator:608.v67378e9d3db_1
+    - git:5.7.0
+    - configuration-as-code:1971.vf9280461ea_89
+    - blueocean:1.27.21
+    - configuration-as-code-groovy:1.1
+    - job-dsl:1.93
+  additionalExistingSecrets:
+    - name: secret-credentials
+      keyName: secret-credentials-token
+  JCasC:
+    configScripts:
+      testscript: |
+        jenkins:
+          systemMessage: "This is a test script"
+      jenkins-casc-configs: |
+        credentials:
+          system:
+            domainCredentials:
+            - credentials:
+              - usernamePassword:
+                  description: "github access token"
+                  id: "github_app_pass"
+                  scope: GLOBAL
+                  password: ${secret-credentials-token}
+                  username: "ahopgood"
+        unclassified:
+          gitHubPluginConfig:
+            hookUrl: "http://localhost:9001/github-webhook/"
+            configs:
+              - apiUrl: "https://api.github.com"
+                credentialsId: "github_app_token"
+                manageHooks: true
+                name: "github"
+
