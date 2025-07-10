@@ -1,0 +1,33 @@
+controller:
+  JCasC:
+    configScripts:
+      jenkins-casc-dsl-jobs: |
+        jobs:
+          - script: |
+              multibranchPipelineJob('dso-demo') {
+                displayName('dso-demo')
+                description('DevSecOps Demo App')
+        
+                branchSources {
+                    github {
+                          id("2022-10-30-1346")
+                          scanCredentialsId("github_app_pass")
+                          repoOwner('ahopgood')
+                          repository('dso-demo')
+                    }
+                }
+        
+                orphanedItemStrategy {
+                    discardOldItems {
+                          daysToKeep(0)
+                          numToKeep(0)
+                    }
+                }
+        
+                configure {
+                  it / factory(class: 'org.jenkinsci.plugins.workflow.multibranch.WorkflowBranchProjectFactory') {
+                    owner(class: 'org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject', reference: '../..')
+                    scriptPath("Jenkinsfile")
+                  }
+                }
+              }
