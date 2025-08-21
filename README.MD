@@ -4,8 +4,13 @@
 * `mise install`
 * [Using ctlptl to setup Kind & Tilt with a registry](https://github.com/tilt-dev/ctlptl?tab=readme-ov-file#kind-with-a-built-in-registry-at-a-random-port)
     * `ctlptl create cluster kind --name kind-devsecops --registry=ctlptl-registry`
-* Set up you github token as an environmental variable:
-  * `export=JENKINS_SECRET_CREDENTIALS_TOKEN=<your-secret-token>`
+* Set up your secrets as an environmental variables:
+  * github token :
+    * `export=JENKINS_SECRET_CREDENTIALS_TOKEN=<your-secret-token>`
+  * dockerhub token:
+    * `export JENKINS_SECRET_CREDENTIALS_DOCKERHUB=<your-secret-token>`
+  * NIST National Vulnerability Database (NVD) API Key:
+    * `export JENKINS_SECRET_CREDENTIALS_NVD_API_KEY=<your_key>`
 * `tilt up` 
 * Jenkins will be available at [http://localhost:9001/](http://localhost:9001/) (or the port you configured in the `Tiltfile`).
 The admin password is available in the logs:
@@ -24,8 +29,8 @@ printf $(kubectl get secret --namespace ci jenkins -o jsonpath="{.data.jenkins-a
 ## Jenkins
 * [Helm chart readme](https://github.com/jenkinsci/helm-charts/blob/main/charts/jenkins/README.md)
 * [Helm template values](https://github.com/jenkinsci/helm-charts/blob/main/charts/jenkins/VALUES.md)
+  * Available jenkins values configurable via helm `helm show values jenkins/jenkins`
 * [Configuration as Code](https://plugins.jenkins.io/configuration-as-code/)
-* Available jenkins values configurable via helm `helm show values jenkins/jenkins`
 * [Configuration as Code](http://localhost:9001/manage/configuration-as-code/reference) reference doc
 
 ### Seed Jobs
@@ -33,7 +38,7 @@ printf $(kubectl get secret --namespace ci jenkins -o jsonpath="{.data.jenkins-a
 * It will use the [Jobs DSL](https://plugins.jenkins.io/job-dsl/) syntax
   * If you want o add a new job in its own file then you'll need to:
     * pass it into the helm command as a new `--value=<filename>.yaml` flag
-    * also make sure it has the full helm and JCasC elements:
+    * also make sure it has the full helm *and* JCasC elements:
     ```
     controller:
     JCasC:
