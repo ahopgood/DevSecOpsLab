@@ -18,6 +18,7 @@ controller:
     - blueocean:1.27.21
     - configuration-as-code-groovy:1.1
     - job-dsl:1.93
+    - dependency-track:6.0.2
   additionalExistingSecrets:
     - name: secret-credentials
       keyName: secret-credentials-token
@@ -47,4 +48,7 @@ controller:
                 credentialsId: "github_app_pass"
                 manageHooks: true
                 name: "github"
+          dependencyTrackPublisher:
+            dependencyTrackUrl: http://dependency-track-apiserver.dependency-track.svc.cluster.local
+            dependencyTrackAutoCreateProjects: true
 

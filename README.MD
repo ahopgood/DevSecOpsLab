@@ -6,7 +6,7 @@
     * `ctlptl create cluster kind --name kind-devsecops --registry=ctlptl-registry`
 * Set up your secrets as an environmental variables:
   * github token :
-    * `export=JENKINS_SECRET_CREDENTIALS_TOKEN=<your-secret-token>`
+    * `export JENKINS_SECRET_CREDENTIALS_TOKEN=<your-secret-token>`
   * dockerhub token:
     * `export JENKINS_SECRET_CREDENTIALS_DOCKERHUB=<your-secret-token>`
   * NIST National Vulnerability Database (NVD) API Key:
@@ -24,6 +24,9 @@ printf $(kubectl get secret --namespace ci jenkins -o jsonpath="{.data.jenkins-a
 
 ## Tear down
 * `kind delete cluster --name devsecops`
+* or `ctlptl delete cluster kind-devsecops`
+* And delete the registry if you created one:
+  * `ctlptl delete registry ctlptl-registry`
 
 
 ## Jenkins
@@ -49,12 +52,53 @@ printf $(kubectl get secret --namespace ci jenkins -o jsonpath="{.data.jenkins-a
                 multibranchPipelineJob('dso-demo') {
                  ....
     ```
-  
 
 ## To Do
 * ~~Add kind port in the cluster setup, or do this via tilt - done via tilt~~
 * Add ingress controller
 * Add ingress for Jenkins
 * Add plugins for Jenkins via [Configuration as Code](https://plugins.jenkins.io/configuration-as-code/)
-  * [Blue Ocean](https://plugins.jenkins.io/blueocean/)
-  * [Configuration as Code - Groovy Scripting Extension](https://plugins.jenkins.io/configuration-as-code-groovy/)
+  * ~~[Blue Ocean](https://plugins.jenkins.io/blueocean/)~~
+  * ~~[Configuration as Code - Groovy Scripting Extension](https://plugins.jenkins.io/configuration-as-code-groovy/)~~
+
+
+### Dependency Track
+* Requires an ingress controller like nginx-ingress to be installed.
+* Add to `/etc/hosts`:
+```
+127.0.0.1 dependencytrack.example.org
+```
+* Then it should be available at [http://dependencytrack.example.org:9002](http://dependencytrack.example.org:9002)
+* [Documentation](https://dependencytrack.org/docs/quick-start-guide/)
+* [Documentation of the OpenAPI Spec](https://docs.dependencytrack.org/integrations/rest-api/)
+  * **NOTE** this requires the backend service to be available which it isn't by default [http://dependencytrack.example.org:9002/api/openapi.yaml](http://dependencytrack.example.org:9002/api/openapi.yaml)
+
+* JCaSC configuration for Dependency Track plugin in Jenkins
+```
+unclassified:
+  dependencyTrackPublisher:
+    dependencyTrackUrl: http://dependency-track-apiserver.dependency-track.svc.cluster.local
+    dependencyTrackAutoCreateProjects: true
+```
+* It would be nice to be able to add the `dependencyTrackApiKey:dependency-track-api-key` as a Jenkins secret automatically
+* Example `additionalExistingSecret` to add to the helm install command:
+```
+- name: secret-credentials
+  keyName: dependency-track-api-key
+```
+* Tilt secret setup example:
+```
+k8s_yaml(secret_from_dict("secret-credentials", namespace="ci", inputs = {
+    ...    
+    'dependency-track-api-key', os.getenv('JENKINS_SECRET_CREDENTIALS_DEPENDENCY_TRACK_API_KEY')
+}))
+
+```
+* JCaSC configuration store the api key as a secret:
+```
+- string:
+  description: Dependency Track API Key
+  id: dependency-track-api-key
+  scope: GLOBAL
+  secret: ${dependency-track-api-key}
+```
