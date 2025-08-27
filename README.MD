@@ -11,6 +11,8 @@
     * `export JENKINS_SECRET_CREDENTIALS_DOCKERHUB=<your-secret-token>`
   * NIST National Vulnerability Database (NVD) API Key:
     * `export JENKINS_SECRET_CREDENTIALS_NVD_API_KEY=<your_key>`
+  * Depdendency Track API Key:
+    * `export JENKINS_SECRET_CREDENTIALS_DEPENDENCY_TRACK_API_KEY=<your_key>`
 * `tilt up` 
 * Jenkins will be available at [http://localhost:9001/](http://localhost:9001/) (or the port you configured in the `Tiltfile`).
 The admin password is available in the logs:
