@@ -1,0 +1,28 @@
+# Ingress Controller
+# Updated timeout, needed for installing the nginx controller
+update_settings ( max_parallel_updates = 3 , k8s_upsert_timeout_secs = 60 , suppress_unused_image_warnings = None )
+
+load('ext://helm_resource', 'helm_resource', 'helm_repo')
+helm_repo('ingress-nginx-repo', 'https://kubernetes.github.io/ingress-nginx')
+helm_resource('ingress-nginx', 'ingress-nginx/ingress-nginx',
+    resource_deps=['ingress-nginx-repo']
+)
+k8s_resource(workload='ingress-nginx', port_forwards='9002:80')
+
+# Dependency Track
+helm_repo('evryfs-oss', 'https://evryfs.github.io/helm-charts/', labels=['dependency-track'])
+
+k8s_yaml('./namespace.yaml')
+k8s_resource(new_name='dependency-track-namespace', objects=['dependency-track:namespace'], labels=['dependency-track'])
+
+helm_resource('dependency-track', 'evryfs-oss/dependency-track',
+    resource_deps=['evryfs-oss', 'dependency-track-namespace'],
+    namespace='dependency-track',
+    labels=['dependency-track'],
+    flags=[
+      '--values=./deptrack.values.yaml',
+    ],
+    deps=[
+        './deptrack.values.yaml'
+    ]
+)
