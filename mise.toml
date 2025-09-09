@@ -4,3 +4,6 @@ helm = "v3.16.3"
 kind = "0.26.0"
 kubectl = "1.32.0"
 tilt = "0.33.21"
+
+[env]
+_.file = '.env'

@@ -5,7 +5,7 @@
 * [Using ctlptl to setup Kind & Tilt with a registry](https://github.com/tilt-dev/ctlptl?tab=readme-ov-file#kind-with-a-built-in-registry-at-a-random-port)
     * `ctlptl create cluster kind --name kind-devsecops --registry=ctlptl-registry`
 * Set up your secrets as an environmental variables:
-  * github token :
+  * github token:
     * `export JENKINS_SECRET_CREDENTIALS_TOKEN=<your-secret-token>`
   * dockerhub token:
     * `export JENKINS_SECRET_CREDENTIALS_DOCKERHUB=<your-secret-token>`
@@ -26,9 +26,9 @@ printf $(kubectl get secret --namespace ci jenkins -o jsonpath="{.data.jenkins-a
 
 ## Tear down
 * `kind delete cluster --name devsecops`
-* or `ctlptl delete cluster kind-devsecops`
 * And delete the registry if you created one:
   * `ctlptl delete registry ctlptl-registry`
+* or `ctlptl delete cluster kind-devsecops --cascade true` to delete both the cluster and registry
 
 
 ## Jenkins
@@ -64,18 +64,22 @@ printf $(kubectl get secret --namespace ci jenkins -o jsonpath="{.data.jenkins-a
   * ~~[Configuration as Code - Groovy Scripting Extension](https://plugins.jenkins.io/configuration-as-code-groovy/)~~
 
 
-### Dependency Track
+## Dependency Track
 * Requires an ingress controller like nginx-ingress to be installed.
 * Add to `/etc/hosts`:
 ```
 127.0.0.1 dependencytrack.example.org
 ```
+* `tilt up`
 * Then it should be available at [http://dependencytrack.example.org:9002](http://dependencytrack.example.org:9002)
 * [Documentation](https://dependencytrack.org/docs/quick-start-guide/)
 * [Documentation of the OpenAPI Spec](https://docs.dependencytrack.org/integrations/rest-api/)
   * **NOTE** this requires the backend service to be available which it isn't by default [http://dependencytrack.example.org:9002/api/openapi.yaml](http://dependencytrack.example.org:9002/api/openapi.yaml)
 
-* JCaSC configuration for Dependency Track plugin in Jenkins
+### Jenkins Dependency Track Plugin
+* [Jenkins Plugin](https://plugins.jenkins.io/dependency-track/)
+* Dependency track is required to be installed and running **before** Jenkins so we can configure the plugin via JCaSC with the API key obtained from dependency track
+* JCaSC configuration for the Dependency Track plugin in Jenkins
 ```
 unclassified:
   dependencyTrackPublisher:
