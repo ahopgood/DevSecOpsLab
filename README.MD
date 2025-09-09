@@ -72,13 +72,28 @@ printf $(kubectl get secret --namespace ci jenkins -o jsonpath="{.data.jenkins-a
 ```
 * `tilt up`
 * Then it should be available at [http://dependencytrack.example.org:9002](http://dependencytrack.example.org:9002)
+* Username `admin` and password `admin`
 * [Documentation](https://dependencytrack.org/docs/quick-start-guide/)
 * [Documentation of the OpenAPI Spec](https://docs.dependencytrack.org/integrations/rest-api/)
   * **NOTE** this requires the backend service to be available which it isn't by default [http://dependencytrack.example.org:9002/api/openapi.yaml](http://dependencytrack.example.org:9002/api/openapi.yaml)
+* Uses the [Evryfs Helm Chart](https://artifacthub.io/packages/helm/evryfs-oss/dependency-track)
+### Setting up an API key
+* `Administration` -> `Access Management` -> `Teams` -> `Automation` -> `API Keys`
+* Add admin to automation team:
+  * `Managed Users` -> `Admin` -> `Team membership` -> `+` -> `Automation`
+  * 
+### To do
+* Add new admin password via the API/helm chart
+* Add base url
+* 
+
 
 ### Jenkins Dependency Track Plugin
 * [Jenkins Plugin](https://plugins.jenkins.io/dependency-track/)
 * Dependency track is required to be installed and running **before** Jenkins so we can configure the plugin via JCaSC with the API key obtained from dependency track
+* The plugin requires Dependency Track version 4.12.0 or later
+  * Testing the connection in Jenkins gives this warning:
+  * > The detected version 4.6.3 is older than the required version 4.12.0 and is no longer supported
 * JCaSC configuration for the Dependency Track plugin in Jenkins
 ```
 unclassified:
@@ -86,6 +101,22 @@ unclassified:
     dependencyTrackUrl: http://dependency-track-apiserver.dependency-track.svc.cluster.local
     dependencyTrackAutoCreateProjects: true
 ```
+#### Troubleshooting
+* Jenkins successfully connects to Dependency Track and uploads the SBOM but the polling check for the processing fails:
+* There is an open issue for something like this here: [https://github.com/DependencyTrack/dependency-track/issues/3434](https://github.com/DependencyTrack/dependency-track/issues/3434)
+```
+javax.ws.rs.NotFoundException: HTTP 404 Not Found
+	at org.glassfish.jersey.server.ServerRuntime$1.run(ServerRuntime.java:252)
+	at org.glassfish.jersey.internal.Errors$1.call(Errors.java:248)
+	at org.glassfish.jersey.internal.Errors$1.call(Errors.java:244)
+	at org.glassfish.jersey.internal.Errors.process(Errors.java:292)
+	at org.glassfish.jersey.internal.Errors.process(Errors.java:274)
+	at org.glassfish.jersey.internal.Errors.process(Errors.java:244)
+```
+* When trying to test the connection between the Jenkins plugin and Dependency Track you get this warning:
+  * > The detected version 4.6.3 is older than the required version
+
+#### To Do
 * It would be nice to be able to add the `dependencyTrackApiKey:dependency-track-api-key` as a Jenkins secret automatically
 * Example `additionalExistingSecret` to add to the helm install command:
 ```

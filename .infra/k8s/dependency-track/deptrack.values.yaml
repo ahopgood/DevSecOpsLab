@@ -23,3 +23,6 @@ apiserver:
     limits:
       cpu: 2
       memory: 7Gi
+    extraEnv:
+        - name: LOGGING_LEVEL
+          value: DEBUG
