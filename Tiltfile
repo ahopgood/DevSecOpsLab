@@ -43,25 +43,21 @@ helm_resource('jenkins', 'jenkins/jenkins',
 
 k8s_resource(workload='jenkins', port_forwards='9001:8080')
 
-
+load_dynamic('.infra/k8s/nginx/Tiltfile')
 
 k8s_yaml('.infra/k8s/argocd/namespace.yaml')
 k8s_resource(new_name='argocd-namespace', objects=['argocd:namespace'], labels=['argocd'])
 
-## kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-#k8s_custom_deploy(
-#   'argocd',
-#   apply_cmd='kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml 1>&2',
-#   delete_cmd='kubectl delete -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml',
-#   deps='',
-#)
-k8s_yaml('.infra/k8s/argocd/argocd.yaml')
+# kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+load('ext://namespace', 'namespace_inject')
+k8s_yaml(namespace_inject(read_file('.infra/k8s/argocd/argocd.yaml'), 'argocd'))
 k8s_resource('argocd-applicationset-controller', labels=['argocd'], resource_deps=['argocd-namespace'])
 k8s_resource('argocd-dex-server', labels=['argocd'], resource_deps=['argocd-namespace'])
 k8s_resource('argocd-notifications-controller', labels=['argocd'], resource_deps=['argocd-namespace'])
 k8s_resource('argocd-redis', labels=['argocd'], resource_deps=['argocd-namespace'])
 k8s_resource('argocd-repo-server', labels=['argocd'], resource_deps=['argocd-namespace'])
-k8s_resource('argocd-server', labels=['argocd'], resource_deps=['argocd-namespace'])
 k8s_resource('argocd-application-controller', labels=['argocd'], resource_deps=['argocd-namespace'])
+
+k8s_resource('argocd-server', labels=['argocd'], resource_deps=['argocd-namespace'], port_forwards=['9003:8080', '9004:8083'])
 
 local_resource('reset-password', '.infra/k8s/argocd/reset-password.sh', resource_deps=['argocd-server'])

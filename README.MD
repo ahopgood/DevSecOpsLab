@@ -139,3 +139,13 @@ k8s_yaml(secret_from_dict("secret-credentials", namespace="ci", inputs = {
   scope: GLOBAL
   secret: ${dependency-track-api-key}
 ```
+
+
+## ArgoCD
+* Username `admin`
+* Password `devSec0ps`
+* You can get the initial password by running:
+```
+kubectl -n argocd get secret argocd-initial-admin-secret \
+          -o jsonpath="{.data.password}" | base64 -d; echo
+```
